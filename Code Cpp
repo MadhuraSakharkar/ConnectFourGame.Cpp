@@ -1,0 +1,139 @@
+//CONNECT FOUR GAME
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+const int ROWS = 6;
+const int COLS = 7;
+
+class ConnectFour {
+public:
+    ConnectFour();
+    void playGame();
+
+private:
+    vector<vector<char>> board;
+    char currentPlayer;
+
+    void initializeBoard();
+    void printBoard();
+    bool dropDisc(int col);
+    bool isBoardFull();
+    bool checkWin();
+    bool checkDirection(int row, int col, int dRow, int dCol);
+    void switchPlayer();
+};
+
+ConnectFour::ConnectFour() : board(ROWS, vector<char>(COLS, ' ')), currentPlayer('X') {}
+
+void ConnectFour::initializeBoard() {
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            board[row][col] = ' ';
+        }
+    }
+}
+
+void ConnectFour::printBoard() {
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            cout << "|" << board[row][col];
+        }
+        cout << "|" << endl;
+    }
+    for (int col = 0; col < COLS; ++col) {
+        cout << " " << col + 1;
+    }
+    cout << endl;
+}
+
+bool ConnectFour::dropDisc(int col) {
+    if (col < 0 || col >= COLS || board[0][col] != ' ') {
+        cout << "Invalid column or column is full. Try again." << endl;
+        return false;
+    }
+
+    int row = ROWS - 1;
+    while (row >= 0 && board[row][col] != ' ') {
+        --row;
+    }
+
+    board[row][col] = currentPlayer;
+    return true;
+}
+
+bool ConnectFour::isBoardFull() {
+    for (int col = 0; col < COLS; ++col) {
+        if (board[0][col] == ' ') {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool ConnectFour::checkWin() {
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            if (board[row][col] == currentPlayer) {
+                if (checkDirection(row, col, 0, 1) || checkDirection(row, col, 1, 0) || 
+                    checkDirection(row, col, 1, 1) || checkDirection(row, col, 1, -1)) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+bool ConnectFour::checkDirection(int row, int col, int dRow, int dCol) {
+    int count = 0;
+    for (int i = 0; i < 4; ++i) {
+        int r = row + dRow * i;
+        int c = col + dCol * i;
+
+        if (r >= 0 && r < ROWS && c >= 0 && c < COLS && board[r][c] == currentPlayer) {
+            count++;
+        } else {
+            break;
+        }
+    }
+    return count == 4;
+}
+
+void ConnectFour::switchPlayer() {
+    currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+}
+
+void ConnectFour::playGame() {
+    int column;
+    bool gameWon = false;
+
+    initializeBoard();
+    while (!isBoardFull() && !gameWon) {
+        printBoard();
+        cout << "Player " << currentPlayer << ", enter a column (1-7): ";
+        cin >> column;
+        column -= 1; 
+        if (dropDisc(column)) {
+            gameWon = checkWin();
+            if (gameWon) {
+                printBoard();
+                cout << "Player " << currentPlayer << " wins!" << endl;
+            } else {
+                switchPlayer();
+            }
+        }
+    }
+
+    if (!gameWon) {
+        printBoard();
+        cout << "The game is a draw!" << endl;
+    }
+}
+
+int main() {
+    ConnectFour game;
+    game.playGame();
+    return 0;
+}
